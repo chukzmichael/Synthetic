@@ -94,6 +94,7 @@
     (let (
         (sender-token-balance (get-synthetic-token-balance sender-address))
     )
+    ;; Secondary validations in case this function is called directly
     (asserts! (> transfer-amount u0) ERR-ZERO-AMOUNT)
     (asserts! (not (is-eq sender-address recipient-address)) ERR-INVALID-RECIPIENT)
     (asserts! (>= sender-token-balance transfer-amount) ERR-INSUFFICIENT-TOKEN-BALANCE)
@@ -216,7 +217,12 @@
 
 (define-public (transfer-synthetic-tokens (recipient-address principal) (transfer-amount uint))
     (begin
+        ;; Input validation
+        (asserts! (> transfer-amount u0) ERR-ZERO-AMOUNT)
+        (asserts! (<= transfer-amount (get-synthetic-token-balance tx-sender)) ERR-INSUFFICIENT-TOKEN-BALANCE)
         (asserts! (not (is-eq tx-sender recipient-address)) ERR-INVALID-RECIPIENT)
+        
+        ;; Only proceed with transfer if validations pass
         (process-token-transfer tx-sender recipient-address transfer-amount))
 )
 
